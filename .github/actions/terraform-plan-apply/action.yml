@@ -1,0 +1,64 @@
+---
+name: "Terraform Plan Apply"
+description: "Plan, approve, and apply Terraform"
+
+inputs:
+  bucket_name:
+    description: "Name of the S3 bucket"
+    required: true
+  tfvar_file_path:
+    description: "Path to the tfvar file"
+    required: true
+  directory:
+    description: "Directory to run Terraform"
+    required: true
+  approvers:
+    description: "List of approvers"
+    required: true
+  component:
+    description: "Component name"
+    required: true
+  master_s3_directory:
+    description: "Name of the master s3 directory"
+    required: true
+  github_pat:
+    description: "GitHub PAT for SCM Provider"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Copy tfvar file
+      shell: bash
+      run: |
+        cp ${{ inputs.tfvar_file_path }} ${{ inputs.directory }}
+
+    - name: Plan Terraform
+      if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+      uses: ./oc-terraform-hub-spoke-connector/.github/actions/plan-tf
+      with:
+        bucket_name: ${{ inputs.bucket_name }}
+        tfvar_file_path: ${{ inputs.tfvar_file_path }}
+        directory: ${{ inputs.directory }}
+        component: ${{ inputs.component }}
+        master_s3_directory: ${{ inputs.master_s3_directory }}
+        github_pat: ${{ inputs.github_pat }}
+
+    - name: Request approval
+      if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ github.token }}
+        approvers: ${{ inputs.approvers }}
+        minimum-approvals: 1
+
+    - name: Apply Terraform
+      if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+      uses: ./oc-terraform-hub-spoke-connector/.github/actions/apply-tf
+      with:
+        bucket_name: ${{ inputs.bucket_name }}
+        tfvar_file_path: ${{ inputs.tfvar_file_path }}
+        directory: ${{ inputs.directory }}
+        component: ${{ inputs.component }}
+        master_s3_directory: ${{ inputs.master_s3_directory }}
+        github_pat: ${{ inputs.github_pat }}

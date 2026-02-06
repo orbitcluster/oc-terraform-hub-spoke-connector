@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: orbit-apps-discovery
+  namespace: ${argocd_namespace}
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - scmProvider:
+        github:
+          organization: ${github_org}
+          tokenRef:
+            secretName: github-token
+            key: token
+        filters:
+          - repositoryMatch: ".*"
+            pathsExist:
+              - helm/Chart.yaml
+            labelMatch: ${github_app_topic}
+        cloneProtocol: https
+  template:
+    metadata:
+      name: "{{.repository}}-discovery"
+      labels:
+        app.kubernetes.io/name: "{{.repository}}"
+        orbit.cluster/repo: "{{.repository}}"
+        orbit.cluster/type: discovery
+    spec:
+      project: default
+      source:
+        repoURL: "{{.url}}"
+        targetRevision: "{{.branch}}"
+        path: helm
+        helm:
+          valueFiles:
+            - values.yaml
+      destination:
+        # Discovery apps deploy to hub cluster by default
+        server: https://kubernetes.default.svc
+        namespace: "{{.repository}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true

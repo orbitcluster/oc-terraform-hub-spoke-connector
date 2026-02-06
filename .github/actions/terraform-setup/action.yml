@@ -1,0 +1,10 @@
+name: "Setup Terraform"
+description: "Sets up Terraform CLI for hub-spoke connector"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.6.0"
