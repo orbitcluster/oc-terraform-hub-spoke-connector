@@ -36,4 +36,10 @@ module "spoke_connector" {
 
   # Spoke clusters to register
   spoke_clusters = var.spoke_clusters
+
+  # ApplicationSet configuration
+  enable_scm_appset          = var.enable_scm_appset
+  enable_environment_appsets = var.enable_environment_appsets
+  enable_pr_preview_appset   = var.enable_pr_preview_appset
+  custom_appsets             = var.custom_appsets
 }
