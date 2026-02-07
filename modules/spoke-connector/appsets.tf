@@ -1,7 +1,7 @@
 ################################################################################
 # ApplicationSet Resources
 # Creates ApplicationSets for GitOps deployments
-# Flow: policy update → cluster registration → appsets (via depends_on)
+# Flow: IRSA setup → cluster registration → appsets (via depends_on)
 ################################################################################
 
 # SCM Provider ApplicationSet - discovers repos with topic
@@ -16,8 +16,7 @@ resource "kubectl_manifest" "appset_scm_provider" {
 
   depends_on = [
     kubernetes_secret_v1.github_token,
-    kubernetes_secret_v1.spoke_cluster,
-    aws_iam_policy.argocd_assume_spoke_updated  # Policy before appsets
+    kubernetes_secret_v1.spoke_cluster
   ]
 }
 
@@ -36,8 +35,7 @@ resource "kubectl_manifest" "appset_environment" {
 
   depends_on = [
     kubernetes_secret_v1.github_token,
-    kubernetes_secret_v1.spoke_cluster,
-    aws_iam_policy.argocd_assume_spoke_updated  # Policy before appsets
+    kubernetes_secret_v1.spoke_cluster
   ]
 }
 
@@ -53,8 +51,7 @@ resource "kubectl_manifest" "appset_pr_preview" {
 
   depends_on = [
     kubernetes_secret_v1.github_token,
-    kubernetes_secret_v1.spoke_cluster,
-    aws_iam_policy.argocd_assume_spoke_updated  # Policy before appsets
+    kubernetes_secret_v1.spoke_cluster
   ]
 }
 
@@ -70,7 +67,6 @@ resource "kubectl_manifest" "custom_appset" {
 
   depends_on = [
     kubernetes_secret_v1.github_token,
-    kubernetes_secret_v1.spoke_cluster,
-    aws_iam_policy.argocd_assume_spoke_updated  # Policy before appsets
+    kubernetes_secret_v1.spoke_cluster
   ]
 }

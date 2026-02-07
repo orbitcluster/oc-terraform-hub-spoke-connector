@@ -13,26 +13,17 @@ data "terraform_remote_state" "hub_infra" {
   }
 }
 
-# Get custom addons state for ArgoCD policy ARN
-data "terraform_remote_state" "hub_custom_addons" {
-  backend = "s3"
-  config = {
-    bucket = var.hub_bucket_name
-    key    = "${var.master_s3_directory}/eks_custom_addons/terraform.tfstate"
-    region = var.region
-  }
-}
-
 module "spoke_connector" {
   source = "../modules/spoke-connector"
+
+  # Hub cluster info (for IRSA)
+  hub_cluster_name        = data.terraform_remote_state.hub_infra.outputs.cluster_name
+  cluster_oidc_issuer_url = data.terraform_remote_state.hub_infra.outputs.cluster_oidc_issuer_url
 
   # GitHub configuration for SCM Provider
   github_pat       = var.github_pat
   github_org       = var.github_org
   github_app_topic = var.github_app_topic
-
-  # ArgoCD policy for dynamic spoke ARN updates
-  argocd_assume_spoke_policy_arn = data.terraform_remote_state.hub_custom_addons.outputs.argocd_assume_spoke_policy_arn
 
   # Spoke clusters to register
   spoke_clusters = var.spoke_clusters

@@ -2,7 +2,7 @@
 # Spoke Cluster Registration
 # Creates ArgoCD cluster secrets for each spoke cluster
 # ArgoCD watches for secrets with label: argocd.argoproj.io/secret-type=cluster
-# Flow: policy update → cluster registration → appsets
+# Flow: IRSA setup → cluster registration → appsets
 ################################################################################
 
 resource "kubernetes_secret_v1" "spoke_cluster" {
@@ -35,6 +35,9 @@ resource "kubernetes_secret_v1" "spoke_cluster" {
 
   type = "Opaque"
 
-  # Ensure policy is updated before registering clusters
-  depends_on = [aws_iam_policy.argocd_assume_spoke_updated]
+  # Ensure IRSA is set up before registering clusters
+  depends_on = [
+    aws_iam_role_policy_attachment.argocd_assume_spokes,
+    kubectl_manifest.patch_argocd_controller
+  ]
 }

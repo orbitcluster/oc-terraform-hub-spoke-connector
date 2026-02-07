@@ -40,8 +40,17 @@ variable "github_app_topic" {
   default     = "orbit-deploy"
 }
 
-variable "argocd_assume_spoke_policy_arn" {
-  description = "ARN of the ArgoCD assume-spoke IAM policy (from custom-addons output)"
+################################################################################
+# Hub Cluster Configuration (for IRSA)
+################################################################################
+
+variable "hub_cluster_name" {
+  description = "Name of the hub EKS cluster"
+  type        = string
+}
+
+variable "cluster_oidc_issuer_url" {
+  description = "OIDC issuer URL for the hub EKS cluster (for IRSA)"
   type        = string
 }
 
