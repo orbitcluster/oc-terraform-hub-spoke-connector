@@ -4,56 +4,6 @@
 # Flow: IRSA setup → cluster registration → appsets (via depends_on)
 ################################################################################
 
-# SCM Provider ApplicationSet - discovers repos with topic
-resource "kubectl_manifest" "appset_scm_provider" {
-  count = var.enable_scm_appset ? 1 : 0
-
-  yaml_body = templatefile("${path.module}/yamls/appset-scm-provider.yaml", {
-    github_org       = var.github_org
-    github_app_topic = var.github_app_topic
-    argocd_namespace = local.argocd_namespace
-  })
-
-  depends_on = [
-    kubernetes_secret_v1.github_token,
-    kubernetes_secret_v1.spoke_cluster
-  ]
-}
-
-# Environment-specific ApplicationSets (dev, staging, prod)
-resource "kubectl_manifest" "appset_environment" {
-  for_each = var.enable_environment_appsets ? toset(["dev", "staging", "prod"]) : toset([])
-
-  yaml_body = templatefile("${path.module}/yamls/appset-environment.yaml", {
-    environment      = each.key
-    github_org       = var.github_org
-    github_app_topic = var.github_app_topic
-    argocd_namespace = local.argocd_namespace
-    # Prod requires manual approval - no auto-sync
-    auto_sync = each.key != "prod"
-  })
-
-  depends_on = [
-    kubernetes_secret_v1.github_token,
-    kubernetes_secret_v1.spoke_cluster
-  ]
-}
-
-# PR Preview ApplicationSet - for all repos with topic
-resource "kubectl_manifest" "appset_pr_preview" {
-  count = var.enable_pr_preview_appset ? 1 : 0
-
-  yaml_body = templatefile("${path.module}/yamls/appset-pr-preview.yaml", {
-    github_org       = var.github_org
-    github_app_topic = var.github_app_topic
-    argocd_namespace = local.argocd_namespace
-  })
-
-  depends_on = [
-    kubernetes_secret_v1.github_token,
-    kubernetes_secret_v1.spoke_cluster
-  ]
-}
 
 ################################################################################
 # Custom ApplicationSets
@@ -68,5 +18,55 @@ resource "kubectl_manifest" "custom_appset" {
   depends_on = [
     kubernetes_secret_v1.github_token,
     kubernetes_secret_v1.spoke_cluster
+  ]
+}
+
+################################################################################
+# Folder Structure ApplicationSets
+# Implements env/dev, env/qa, env/prod workflow
+################################################################################
+
+# Dev PRs (Dynamic)
+resource "kubectl_manifest" "appset_folder_dev_pr" {
+  count = var.enable_folder_structure_appsets ? 1 : 0
+
+  yaml_body = templatefile("${path.module}/yamls/appset-dev-pr.yaml", {
+    github_org       = var.github_org
+    github_app_topic = var.github_app_topic
+    argocd_namespace = local.argocd_namespace
+  })
+
+  depends_on = [
+    kubernetes_secret_v1.github_token
+  ]
+}
+
+# Dev Main (Continuous)
+resource "kubectl_manifest" "appset_folder_dev_main" {
+  count = var.enable_folder_structure_appsets ? 1 : 0
+
+  yaml_body = templatefile("${path.module}/yamls/appset-dev-main.yaml", {
+    github_org       = var.github_org
+    github_app_topic = var.github_app_topic
+    argocd_namespace = local.argocd_namespace
+  })
+
+  depends_on = [
+    kubernetes_secret_v1.github_token
+  ]
+}
+
+# Promoter (QA/Prod)
+resource "kubectl_manifest" "appset_folder_promoter" {
+  count = var.enable_folder_structure_appsets ? 1 : 0
+
+  yaml_body = templatefile("${path.module}/yamls/appset-promoter.yaml", {
+    github_org       = var.github_org
+    github_app_topic = var.github_app_topic
+    argocd_namespace = local.argocd_namespace
+  })
+
+  depends_on = [
+    kubernetes_secret_v1.github_token
   ]
 }

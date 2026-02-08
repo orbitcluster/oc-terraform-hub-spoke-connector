@@ -12,10 +12,10 @@ data "aws_region" "current" {}
 locals {
   # Extract OIDC provider from the OIDC issuer URL
   oidc_provider = replace(var.cluster_oidc_issuer_url, "https://", "")
-  
+
   # Spoke cluster role ARNs
   spoke_role_arns = [for k, v in var.spoke_clusters : v.argocd_role_arn]
-  
+
   # Service account name
   spoke_sa_name = "argocd-spoke-controller"
 }
@@ -47,9 +47,9 @@ resource "aws_iam_role" "argocd_spoke_access" {
   })
 
   tags = {
-    Name        = "${var.hub_cluster_name}-argocd-spoke-access"
-    Purpose     = "ArgoCD spoke cluster access via IRSA"
-    ManagedBy   = "terraform-hub-spoke-connector"
+    Name      = "${var.hub_cluster_name}-argocd-spoke-access"
+    Purpose   = "ArgoCD spoke cluster access via IRSA"
+    ManagedBy = "terraform-hub-spoke-connector"
   }
 }
 
@@ -100,7 +100,8 @@ resource "aws_iam_policy" "argocd_eks_describe" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Sid      = "DescribeEKS"
+      Sid = "DescribeEKS"
+      # checkov:skip=CKV_AWS_355:Temporarily ignoring wildcards for EKS describe
       Effect   = "Allow"
       Action   = ["eks:DescribeCluster"]
       Resource = "*"

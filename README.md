@@ -123,7 +123,7 @@ spoke_clusters = {
     env             = "dev"
     argocd_role_arn = "arn:aws:iam::123456789012:role/argocd-spoke-access"
   }
-  
+
   "staging-spoke" = {
     cluster_name    = "BU12345-STAGE001-eks"
     server          = "https://YYYYYYYYYY.gr7.us-east-1.eks.amazonaws.com"
@@ -131,7 +131,7 @@ spoke_clusters = {
     env             = "staging"
     argocd_role_arn = "arn:aws:iam::123456789012:role/argocd-spoke-access"
   }
-  
+
   "prod-spoke" = {
     cluster_name    = "BU12345-PROD001-eks"
     server          = "https://ZZZZZZZZZZ.gr7.us-east-1.eks.amazonaws.com"
@@ -245,3 +245,28 @@ Example trust policy for spoke role:
 ## License
 
 MIT
+<!-- BEGIN_TF_DOCS -->
+## Requirements
+
+No requirements.
+
+## Providers
+
+No providers.
+
+## Modules
+
+No modules.
+
+## Resources
+
+No resources.
+
+## Inputs
+
+No inputs.
+
+## Outputs
+
+No outputs.
+<!-- END_TF_DOCS -->

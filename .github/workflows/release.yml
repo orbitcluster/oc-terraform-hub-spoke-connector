@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: main
+          dry_run: ${{ github.event_name == 'pull_request' }}
+
+      - name: Print Version
+        env:
+          NEW_RELEASE_PUBLISHED: ${{ steps.semantic.outputs.new_release_published }} # yamllint disable-line rule:line-length
+          NEW_RELEASE_VERSION: ${{ steps.semantic.outputs.new_release_version }} # yamllint disable-line rule:line-length
+
+        run: |
+          if [ "$NEW_RELEASE_PUBLISHED" == "true" ]; then
+            echo "Released version: $NEW_RELEASE_VERSION"
+          else
+            echo "Dry Run - Next version would be:"
+            echo "$NEW_RELEASE_VERSION"
+          fi

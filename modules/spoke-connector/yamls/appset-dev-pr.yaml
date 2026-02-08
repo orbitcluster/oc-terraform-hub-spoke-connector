@@ -1,44 +1,47 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: orbit-apps-discovery
+  name: orbit-folder-dev-pr
   namespace: ${argocd_namespace}
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
-    - scmProvider:
+    - pullRequest:
         github:
+          # The GitHub organization and repo to check.
+          # Here we scan all repos in the org that match the labels,
+          # or you can restrict to specific repos.
           organization: ${github_org}
+          # Optional: Filter by topic like we did before
+          # labels:
+          #   - ${github_app_topic}
           tokenRef:
             secretName: github-token
             key: token
-        filters:
-          - repositoryMatch: ".*"
-            pathsExist:
-              - helm/Chart.yaml
-            labelMatch: ${github_app_topic}
-        cloneProtocol: https
+        requeueAfterSeconds: 60
   template:
     metadata:
-      name: "{{.repository}}-discovery"
+      name: "{{.repository}}-{{.branch}}-dev"
       labels:
-        app.kubernetes.io/name: "{{.repository}}"
-        orbit.cluster/repo: "{{.repository}}"
-        orbit.cluster/type: discovery
+        orbit/env: dev
+        orbit/type: pr
     spec:
       project: default
       source:
         repoURL: "{{.url}}"
         targetRevision: "{{.branch}}"
-        path: helm
+        path: "."
         helm:
           valueFiles:
             - values.yaml
+            - env/dev/values.yaml
       destination:
-        # Discovery apps deploy to hub cluster by default
         server: https://kubernetes.default.svc
-        namespace: "{{.repository}}"
+        namespace: "{{.repository}}-{{.branch}}-dev"
       syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
         syncOptions:
           - CreateNamespace=true

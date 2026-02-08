@@ -15,9 +15,9 @@ variable "spoke_clusters" {
 
   validation {
     condition = alltrue([
-      for k, v in var.spoke_clusters : contains(["dev", "staging", "prod"], v.env)
+      for k, v in var.spoke_clusters : contains(["dev", "qa", "prod"], v.env)
     ])
-    error_message = "Each spoke cluster env must be one of: dev, staging, prod"
+    error_message = "Each spoke cluster env must be one of: dev, qa, prod"
   }
 }
 
@@ -58,28 +58,17 @@ variable "cluster_oidc_issuer_url" {
 # ApplicationSet Configuration
 ################################################################################
 
-variable "enable_scm_appset" {
-  description = "Enable SCM Provider ApplicationSet (discovers repos with topic)"
-  type        = bool
-  default     = true
-}
-
-variable "enable_environment_appsets" {
-  description = "Enable environment-specific ApplicationSets (dev/staging/prod)"
-  type        = bool
-  default     = true
-}
-
-variable "enable_pr_preview_appset" {
-  description = "Enable PR Preview ApplicationSet"
-  type        = bool
-  default     = true
-}
 
 variable "custom_appsets" {
   description = "Map of custom ApplicationSet YAML configurations to deploy"
   type = map(object({
-    yaml_content = string  # Raw YAML content or path to YAML file
+    yaml_content = string # Raw YAML content or path to YAML file
   }))
   default = {}
+}
+
+variable "enable_folder_structure_appsets" {
+  description = "Enable folder-based (env/dev, env/qa) ApplicationSets"
+  type        = bool
+  default     = true
 }

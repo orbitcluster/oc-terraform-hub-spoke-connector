@@ -29,8 +29,6 @@ module "spoke_connector" {
   spoke_clusters = var.spoke_clusters
 
   # ApplicationSet configuration
-  enable_scm_appset          = var.enable_scm_appset
-  enable_environment_appsets = var.enable_environment_appsets
-  enable_pr_preview_appset   = var.enable_pr_preview_appset
-  custom_appsets             = var.custom_appsets
+  enable_folder_structure_appsets = var.enable_folder_structure_appsets
+  custom_appsets                  = var.custom_appsets
 }
