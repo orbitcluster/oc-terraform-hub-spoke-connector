@@ -1,0 +1,33 @@
+---
+name: Destroy Terraform
+description: "Destroy Terraform resources"
+
+inputs:
+  bucket_name:
+    description: "Name of the S3 bucket"
+    required: true
+  tfvar_file_path:
+    description: "Path to the tfvar file"
+    required: true
+  directory:
+    description: "Directory to run Terraform"
+    required: true
+  component:
+    description: "Component name"
+    required: true
+  master_s3_directory:
+    description: "Name of the master s3 directory"
+    required: true
+  github_pat:
+    description: "GitHub PAT for SCM Provider"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Terraform Destroy
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      env:
+        TF_VAR_github_pat: ${{ inputs.github_pat }}
+      run: terraform destroy -auto-approve -var-file="${{ inputs.tfvar_file_path }}"
