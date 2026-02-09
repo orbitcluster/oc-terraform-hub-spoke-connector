@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: orbit-folder-dev-pr
+  namespace: ${argocd_namespace}
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          # 1. Target dev clusters
+          - clusters:
+              selector:
+                matchLabels:
+                  environment: dev
+          # 2. Discover repos with topic (filter by topic first)
+          - scmProvider:
+              github:
+                organization: ${github_org}
+                tokenRef:
+                  secretName: github-token
+                  key: token
+              filters:
+                - repositoryMatch: ".*"
+                  pathsExist: [env/dev/values.yaml]
+                  labelMatch: ${github_app_topic}
+              cloneProtocol: https
+          # 3. Get open PRs for discovered repos
+          - pullRequest:
+              github:
+                owner: ${github_org}
+                repo: "{{.repository}}"
+                tokenRef:
+                  secretName: github-token
+                  key: token
+              requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: '{{.repository}}-pr-{{.branch | replace "/" "-" | trunc 20}}'
+      labels:
+        env: dev
+        type: pr
+        branch: '{{.branch | replace "/" "-" | trunc 20}}'
+    spec:
+      project: default
+      source:
+        repoURL: "{{.url}}"
+        targetRevision: "{{.branch}}"
+        path: "."
+        helm:
+          valueFiles:
+            - values.yaml
+            - env/dev/values.yaml
+      destination:
+        server: "{{.server}}"
+        namespace: '{{.repository}}-pr-{{.branch | replace "/" "-" | trunc 20}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        managedNamespaceMetadata:
+          labels:
+            istio-injection: enabled

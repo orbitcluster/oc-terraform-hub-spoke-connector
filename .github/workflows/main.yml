@@ -1,0 +1,73 @@
+---
+name: connector-flow
+on:
+  workflow_call:
+    inputs:
+      bucket_name:
+        description: "Name of the S3 bucket for state"
+        required: true
+        type: string
+      tfvar_file_path:
+        description: "Path to the tfvar file"
+        required: true
+        type: string
+      approvers:
+        description: "List of approvers"
+        required: true
+        type: string
+      master_s3_directory:
+        description: "Name of the master s3 directory"
+        required: true
+        type: string
+      module_ref:
+        description: "Branch/tag/ref of oc-terraform-hub-spoke-connector to use"
+        required: false
+        type: string
+        default: "main"
+
+permissions:
+  id-token: write
+  contents: read
+  issues: write
+
+jobs:
+  connector-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Checkout oc-terraform-hub-spoke-connector
+        uses: actions/checkout@v4
+        with:
+          repository: orbitcluster/oc-terraform-hub-spoke-connector
+          path: oc-terraform-hub-spoke-connector
+          ref: ${{ inputs.module_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.OC_ROLE_TO_ASSUME }}
+          role-session-name: githubactions-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: ./oc-terraform-hub-spoke-connector/.github/actions/terraform-setup
+
+      - name: Set environment variables for Terraform
+        run: |
+          echo "MASTER_S3_DIRECTORY=${{ inputs.master_s3_directory }}" >> $GITHUB_ENV
+          echo "TF_STATE_BUCKET=${{ inputs.bucket_name }}" >> $GITHUB_ENV
+
+      - name: connector_deploy
+        if: github.ref == 'refs/heads/main'
+        uses: ./oc-terraform-hub-spoke-connector/.github/actions/terraform-plan-apply
+        with:
+          bucket_name: ${{ inputs.bucket_name }}
+          tfvar_file_path: ${{ inputs.tfvar_file_path }}
+          directory: ./oc-terraform-hub-spoke-connector/connector-deploy
+          approvers: ${{ inputs.approvers }}
+          component: connector_deploy
+          master_s3_directory: ${{ inputs.master_s3_directory }}
+          github_pat: ${{ secrets.GITHUB_PAT_SCM }}

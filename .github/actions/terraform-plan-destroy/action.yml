@@ -1,0 +1,67 @@
+---
+name: Terraform Plan Destroy
+description: "Plan and destroy Terraform resources with approval"
+
+inputs:
+  bucket_name:
+    description: "Name of the S3 bucket"
+    required: true
+  tfvar_file_path:
+    description: "Path to the tfvar file"
+    required: true
+  approvers:
+    description: "List of approvers"
+    required: true
+  directory:
+    description: "Directory to run Terraform"
+    required: true
+  component:
+    description: "Component name"
+    required: true
+  master_s3_directory:
+    description: "Name of the master s3 directory"
+    required: true
+  github_pat:
+    description: "GitHub PAT for SCM Provider"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Copy tfvar file
+      shell: bash
+      run: |
+        cp ${{ inputs.tfvar_file_path }} ${{ inputs.directory }}
+
+    - name: Terraform Init
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      run: terraform init -backend-config="bucket=${{ inputs.bucket_name }}" -backend-config="key=${{ inputs.master_s3_directory }}/${{ inputs.component }}/terraform.tfstate"
+
+    - name: Terraform Plan Destroy
+      shell: bash
+      if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+      working-directory: ${{ inputs.directory }}
+      env:
+        TF_VAR_github_pat: ${{ inputs.github_pat }}
+      run: terraform plan -destroy -var-file="${{ inputs.tfvar_file_path }}"
+
+    - name: Request approval for destroy
+      if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ github.token }}
+        minimum-approvals: 1
+        approvers: ${{ inputs.approvers }}
+        issue-title: "Terraform DESTROY approval required"
+
+    - name: Destroy Terraform
+      if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+      uses: ./oc-terraform-hub-spoke-connector/.github/actions/destroy-tf
+      with:
+        bucket_name: ${{ inputs.bucket_name }}
+        tfvar_file_path: ${{ inputs.tfvar_file_path }}
+        directory: ${{ inputs.directory }}
+        component: ${{ inputs.component }}
+        master_s3_directory: ${{ inputs.master_s3_directory }}
+        github_pat: ${{ inputs.github_pat }}
