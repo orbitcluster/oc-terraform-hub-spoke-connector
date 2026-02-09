@@ -29,8 +29,8 @@ spec:
     metadata:
       name: "{{.repository}}-main-dev"
       labels:
-        orbit/env: dev
-        orbit/type: main
+        env: dev
+        type: main
     spec:
       project: default
       source:

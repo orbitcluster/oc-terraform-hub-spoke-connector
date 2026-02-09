@@ -28,7 +28,4 @@ module "spoke_connector" {
   # Spoke clusters to register
   spoke_clusters = var.spoke_clusters
 
-  # ApplicationSet configuration
-  enable_folder_structure_appsets = var.enable_folder_structure_appsets
-  custom_appsets                  = var.custom_appsets
 }

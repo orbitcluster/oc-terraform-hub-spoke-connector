@@ -53,22 +53,3 @@ variable "cluster_oidc_issuer_url" {
   description = "OIDC issuer URL for the hub EKS cluster (for IRSA)"
   type        = string
 }
-
-################################################################################
-# ApplicationSet Configuration
-################################################################################
-
-
-variable "custom_appsets" {
-  description = "Map of custom ApplicationSet YAML configurations to deploy"
-  type = map(object({
-    yaml_content = string # Raw YAML content or path to YAML file
-  }))
-  default = {}
-}
-
-variable "enable_folder_structure_appsets" {
-  description = "Enable folder-based (env/dev, env/qa) ApplicationSets"
-  type        = bool
-  default     = true
-}

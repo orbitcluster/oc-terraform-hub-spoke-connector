@@ -54,22 +54,3 @@ variable "spoke_clusters" {
   }))
   default = {}
 }
-
-################################################################################
-# ApplicationSet Configuration
-################################################################################
-
-
-variable "custom_appsets" {
-  description = "Map of custom ApplicationSet YAML configurations to deploy"
-  type = map(object({
-    yaml_content = string
-  }))
-  default = {}
-}
-
-variable "enable_folder_structure_appsets" {
-  description = "Enable folder-based (env/dev, env/qa) ApplicationSets"
-  type        = bool
-  default     = true
-}

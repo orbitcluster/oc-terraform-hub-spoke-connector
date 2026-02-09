@@ -37,11 +37,11 @@ spec:
               requeueAfterSeconds: 60
   template:
     metadata:
-      name: "{{.repository}}-pr-{{.branch | replace \"/\" \"-\" | trunc 20}}"
+      name: '{{.repository}}-pr-{{.branch | replace "/" "-" | trunc 20}}'
       labels:
-        orbit/env: dev
-        orbit/type: pr
-        orbit/branch: "{{.branch | replace \"/\" \"-\" | trunc 20}}"
+        env: dev
+        type: pr
+        branch: '{{.branch | replace "/" "-" | trunc 20}}'
     spec:
       project: default
       source:
@@ -54,7 +54,7 @@ spec:
             - env/dev/values.yaml
       destination:
         server: "{{.server}}"
-        namespace: "{{.repository}}-pr-{{.branch | replace \"/\" \"-\" | trunc 20}}"
+        namespace: '{{.repository}}-pr-{{.branch | replace "/" "-" | trunc 20}}'
       syncPolicy:
         automated:
           prune: true

@@ -5,21 +5,7 @@
 ################################################################################
 
 
-################################################################################
-# Custom ApplicationSets
-# User-provided ApplicationSet YAML configurations
-################################################################################
 
-resource "kubectl_manifest" "custom_appset" {
-  for_each = var.custom_appsets
-
-  yaml_body = each.value.yaml_content
-
-  depends_on = [
-    kubernetes_secret_v1.github_token,
-    kubernetes_secret_v1.spoke_cluster
-  ]
-}
 
 ################################################################################
 # Folder Structure ApplicationSets
@@ -28,7 +14,6 @@ resource "kubectl_manifest" "custom_appset" {
 
 # Dev PRs (Dynamic)
 resource "kubectl_manifest" "appset_folder_dev_pr" {
-  count = var.enable_folder_structure_appsets ? 1 : 0
 
   yaml_body = templatefile("${path.module}/yamls/appset-dev-pr.yaml", {
     github_org       = var.github_org
@@ -43,7 +28,6 @@ resource "kubectl_manifest" "appset_folder_dev_pr" {
 
 # Dev Main (Continuous)
 resource "kubectl_manifest" "appset_folder_dev_main" {
-  count = var.enable_folder_structure_appsets ? 1 : 0
 
   yaml_body = templatefile("${path.module}/yamls/appset-dev-main.yaml", {
     github_org       = var.github_org
@@ -58,7 +42,6 @@ resource "kubectl_manifest" "appset_folder_dev_main" {
 
 # Promoter (QA/Prod)
 resource "kubectl_manifest" "appset_folder_promoter" {
-  count = var.enable_folder_structure_appsets ? 1 : 0
 
   yaml_body = templatefile("${path.module}/yamls/appset-promoter.yaml", {
     github_org       = var.github_org
