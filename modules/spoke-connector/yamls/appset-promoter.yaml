@@ -9,7 +9,17 @@ spec:
   generators:
     - matrix:
         generators:
-          # 1. Discover Repos
+          # 1. List environments (QA, Prod)
+          - list:
+              elements:
+                - env: qa
+                - env: prod
+          # 2. Target clusters matching the environment
+          - clusters:
+              selector:
+                matchLabels:
+                  environment: "{{.env}}"
+          # 3. Discover repos with topic
           - scmProvider:
               github:
                 organization: ${github_org}
@@ -19,11 +29,6 @@ spec:
               filters:
                 - repositoryMatch: ".*"
                   labelMatch: ${github_app_topic}
-          # 2. List Environments (QA, Prod)
-          - list:
-              elements:
-                - env: qa
-                - env: prod
   template:
     metadata:
       name: "{{.repository}}-main-{{.env}}"
@@ -41,7 +46,7 @@ spec:
             - values.yaml
             - env/{{.env}}/values.yaml
       destination:
-        server: https://kubernetes.default.svc
+        server: "{{.server}}"
         namespace: "{{.repository}}-main-{{.env}}"
       syncPolicy:
         automated:

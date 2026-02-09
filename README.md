@@ -224,11 +224,29 @@ Applications discovered by the SCM Provider must have:
 
 ## Spoke Cluster Requirements
 
-Each spoke cluster needs an IAM role that:
-1. Trusts the hub cluster's ArgoCD IRSA role
-2. Has permissions for ArgoCD to manage resources
+Each spoke cluster needs an IAM role that allows the hub's ArgoCD to assume it. This role is **automatically created** when deploying spoke clusters with `oc-terraform-module-custom-addons` (when `is_hub = false`).
 
-Example trust policy for spoke role:
+### Automatic Setup (Recommended)
+
+When deploying a spoke cluster, set the following in your tfvars:
+
+```hcl
+is_hub           = false
+hub_cluster_name = "allhub-BU12345-APP67890-eks"  # Your hub cluster name
+hub_account_id   = ""                              # Optional: defaults to current account
+```
+
+The module creates:
+- **IAM Role**: `${cluster_name}-argocd-hub-assumable`
+- **Trust Policy**: Allows `${hub_cluster_name}-argocd-spoke-access` to assume
+- **Permissions**: `eks:DescribeCluster` for K8s authentication
+
+**Output**: Use `argocd_spoke_role_arn` output as the `argocd_role_arn` in connector config.
+
+### Manual Setup (Alternative)
+
+If not using the custom-addons module, create a role with this trust policy:
+
 ```json
 {
   "Version": "2012-10-17",
@@ -241,6 +259,7 @@ Example trust policy for spoke role:
   }]
 }
 ```
+
 
 ## License
 

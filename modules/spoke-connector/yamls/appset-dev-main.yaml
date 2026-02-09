@@ -7,16 +7,24 @@ spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
-    - scmProvider:
-        github:
-          organization: ${github_org}
-          tokenRef:
-            secretName: github-token
-            key: token
-        filters:
-          - repositoryMatch: ".*"
-            pathsExist: [env/dev/values.yaml]
-            labelMatch: ${github_app_topic}
+    - matrix:
+        generators:
+          # 1. Target dev clusters
+          - clusters:
+              selector:
+                matchLabels:
+                  environment: dev
+          # 2. Discover repos with topic and env/dev folder
+          - scmProvider:
+              github:
+                organization: ${github_org}
+                tokenRef:
+                  secretName: github-token
+                  key: token
+              filters:
+                - repositoryMatch: ".*"
+                  pathsExist: [env/dev/values.yaml]
+                  labelMatch: ${github_app_topic}
   template:
     metadata:
       name: "{{.repository}}-main-dev"
@@ -34,7 +42,7 @@ spec:
             - values.yaml
             - env/dev/values.yaml
       destination:
-        server: https://kubernetes.default.svc
+        server: "{{.server}}"
         namespace: "{{.repository}}-main-dev"
       syncPolicy:
         automated:
