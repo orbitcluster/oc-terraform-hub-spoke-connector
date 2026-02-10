@@ -25,6 +25,7 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # Init is done in plan-destroy step, no need to re-init in same job
     - name: Terraform Destroy
       shell: bash
       working-directory: ${{ inputs.directory }}
