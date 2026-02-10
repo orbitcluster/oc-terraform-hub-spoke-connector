@@ -154,7 +154,7 @@ spoke_clusters = {
 | Secret | Description |
 |--------|-------------|
 | `OC_ROLE_TO_ASSUME` | AWS IAM role ARN for GitHub Actions |
-| `GITHUB_PAT_SCM` | GitHub PAT with `repo` scope for SCM Provider |
+| `OC_PAT_SCM` | GitHub PAT with `repo` scope for SCM Provider |
 
 ## Variables Reference
 

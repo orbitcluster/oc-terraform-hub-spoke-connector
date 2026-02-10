@@ -69,4 +69,4 @@ jobs:
           approvers: ${{ inputs.approvers }}
           component: connector_deploy
           master_s3_directory: ${{ inputs.master_s3_directory }}
-          github_pat: ${{ secrets.GITHUB_PAT_SCM }}
+          github_pat: ${{ secrets.OC_PAT_SCM }}
