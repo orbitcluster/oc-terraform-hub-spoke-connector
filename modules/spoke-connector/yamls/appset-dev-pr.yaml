@@ -9,24 +9,27 @@ spec:
   generators:
     - matrix:
         generators:
-          # 1. Target dev clusters
-          - clusters:
-              selector:
-                matchLabels:
-                  environment: dev
-          # 2. Discover repos with topic (filter by topic first)
-          - scmProvider:
-              github:
-                organization: ${github_org}
-                tokenRef:
-                  secretName: github-token
-                  key: token
-              filters:
-                - repositoryMatch: ".*"
-                  pathsExist: [env/dev/values.yaml]
-                  labelMatch: ${github_app_topic}
-              cloneProtocol: https
-          # 3. Get open PRs for discovered repos
+          # Outer Generator 1: Inner matrix (clusters × repos)
+          - matrix:
+              generators:
+                # 1a. Target dev clusters
+                - clusters:
+                    selector:
+                      matchLabels:
+                        environment: dev
+                # 1b. Discover repos with topic
+                - scmProvider:
+                    github:
+                      organization: ${github_org}
+                      tokenRef:
+                        secretName: github-token
+                        key: token
+                    filters:
+                      - repositoryMatch: ".*"
+                        pathsExist: [env/dev/values.yaml]
+                        labelMatch: ${github_app_topic}
+                    cloneProtocol: https
+          # Outer Generator 2: Get open PRs for discovered repos
           - pullRequest:
               github:
                 owner: ${github_org}
