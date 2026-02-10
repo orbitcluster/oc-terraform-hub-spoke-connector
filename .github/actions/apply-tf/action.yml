@@ -25,13 +25,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Terraform Init
-      shell: bash
-      working-directory: ${{ inputs.directory }}
-      run: |
-        terraform init \
-          -backend-config="bucket=${{ inputs.bucket_name }}" \
-          -backend-config="key=${{ inputs.master_s3_directory }}/${{ inputs.component }}/terraform.tfstate"
+    # Init is done in plan step, no need to re-init in same job
 
     - name: Terraform Apply
       shell: bash
