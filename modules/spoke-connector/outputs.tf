@@ -25,10 +25,11 @@ output "github_token_secret_name" {
 
 output "argocd_spoke_role_arn" {
   description = "ARN of the IAM role for ArgoCD spoke cluster access"
-  value       = length(aws_iam_role.argocd_spoke_access) > 0 ? aws_iam_role.argocd_spoke_access[0].arn : null
+  value       = length(data.aws_iam_role.argocd_hub_role) > 0 ? data.aws_iam_role.argocd_hub_role[0].arn : null
 }
 
 output "argocd_spoke_service_account" {
   description = "Name of the Kubernetes service account for spoke access"
-  value       = length(kubernetes_service_account_v1.argocd_spoke_controller) > 0 ? kubernetes_service_account_v1.argocd_spoke_controller[0].metadata[0].name : null
+  # We now use the default ArgoCD controller service account
+  value = "argocd-application-controller"
 }
