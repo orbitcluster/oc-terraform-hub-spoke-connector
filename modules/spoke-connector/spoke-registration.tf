@@ -37,7 +37,6 @@ resource "kubernetes_secret_v1" "spoke_cluster" {
 
   # Ensure IRSA is set up before registering clusters
   depends_on = [
-    aws_iam_role_policy_attachment.argocd_assume_spokes,
-    kubectl_manifest.patch_argocd_controller
+    aws_iam_role_policy_attachment.argocd_assume_spokes
   ]
 }
