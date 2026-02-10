@@ -9,17 +9,20 @@ spec:
   generators:
     - matrix:
         generators:
-          # 1. List environments (QA, Prod)
-          - list:
-              elements:
-                - env: qa
-                - env: prod
-          # 2. Target clusters matching the environment
-          - clusters:
-              selector:
-                matchLabels:
-                  environment: "{{.env}}"
-          # 3. Discover repos with topic
+          # Outer Generator 1: Inner matrix (environments × clusters)
+          - matrix:
+              generators:
+                # 1a. List environments (QA, Prod)
+                - list:
+                    elements:
+                      - env: qa
+                      - env: prod
+                # 1b. Target clusters matching the environment
+                - clusters:
+                    selector:
+                      matchLabels:
+                        environment: "{{.env}}"
+          # Outer Generator 2: Discover repos with topic
           - scmProvider:
               github:
                 organization: ${github_org}
