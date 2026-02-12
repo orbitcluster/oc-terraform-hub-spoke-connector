@@ -32,6 +32,7 @@ spec:
               filters:
                 - repositoryMatch: ".*"
                   labelMatch: ${github_app_topic}
+              cloneProtocol: https
   template:
     metadata:
       name: "{{.repository}}-main-{{.env}}"
