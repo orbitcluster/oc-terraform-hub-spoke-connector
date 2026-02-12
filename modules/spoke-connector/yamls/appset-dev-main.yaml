@@ -25,6 +25,7 @@ spec:
                 - repositoryMatch: ".*"
                   pathsExist: [env/dev/values.yaml]
                   labelMatch: ${github_app_topic}
+              cloneProtocol: https
   template:
     metadata:
       name: "{{.repository}}-main-dev"
