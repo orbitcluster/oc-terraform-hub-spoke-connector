@@ -20,3 +20,23 @@ resource "kubernetes_secret_v1" "github_token" {
 
   type = "Opaque"
 }
+
+resource "kubernetes_secret_v1" "github_repo_creds" {
+  count = var.github_pat != "" ? 1 : 0
+
+  metadata {
+    name      = "github-repo-creds"
+    namespace = local.argocd_namespace
+    labels = {
+      "argocd.argoproj.io/secret-type" = "repository"
+    }
+  }
+
+  data = {
+    url      = "https://github.com/${var.github_org}"
+    password = var.github_pat
+    username = "not-used"
+  }
+
+  type = "Opaque"
+}
