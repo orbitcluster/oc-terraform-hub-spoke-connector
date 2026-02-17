@@ -45,6 +45,13 @@ spec:
         env: dev
         type: pr
         branch: '{{.branch | replace "/" "-" | trunc 20}}'
+      annotations:
+        # Enable ArgoCD Image Updater for PRs
+        argocd-image-updater.argoproj.io/image-list: app=~
+        argocd-image-updater.argoproj.io/app.update-strategy: latest
+        # Match PR tags: {semver}-{branch}-{sha} (e.g. 1.2.3-feat-login-a1b2c3d)
+        argocd-image-updater.argoproj.io/app.allow-tags: regexp:^[0-9]+\.[0-9]+\.[0-9]+-.*$
+        argocd-image-updater.argoproj.io/write-back-method: git
     spec:
       project: default
       source:
