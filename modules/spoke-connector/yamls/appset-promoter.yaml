@@ -44,11 +44,11 @@ spec:
       source:
         repoURL: "{{.url}}"
         targetRevision: "main"
-        path: "."
+        path: "helm"
         helm:
           valueFiles:
             - values.yaml
-            - env/{{.env}}/values.yaml
+            - envs/{{.env}}/values.yaml
       destination:
         server: "{{.server}}"
         namespace: "{{.repository}}-main-{{.env}}"
