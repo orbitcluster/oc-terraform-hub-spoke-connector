@@ -32,6 +32,13 @@ spec:
       labels:
         env: dev
         type: main
+      annotations:
+        # Enable ArgoCD Image Updater
+        argocd-image-updater.argoproj.io/image-list: app=~
+        argocd-image-updater.argoproj.io/app.update-strategy: latest
+        argocd-image-updater.argoproj.io/app.allow-tags: regexp:^[0-9]+\.[0-9]+\.[0-9]+$
+        # Write back to Git (requires write permissions)
+        argocd-image-updater.argoproj.io/write-back-method: git
     spec:
       project: default
       source:

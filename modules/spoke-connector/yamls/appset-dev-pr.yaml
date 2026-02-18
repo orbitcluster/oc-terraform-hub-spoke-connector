@@ -7,9 +7,13 @@ spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
+    # The Matrix generator combines parameters from multiple child generators.
+    # It acts as a Cartesian Product: (Generator A) x (Generator B).
+    # Here, we have a nested Matrix structure to handle: (Clusters x Repos) x PullRequests.
     - matrix:
         generators:
-          # Outer Generator 1: Inner matrix (clusters × repos)
+          # Inner Matrix: First, find all valid combinations of (Target Clusters * Repositories)
+          # Result: List of {cluster-name, cluster-server, repository-name, repository-url}
           - matrix:
               generators:
                 # 1a. Target dev clusters
@@ -26,7 +30,7 @@ spec:
                         key: token
                     filters:
                       - repositoryMatch: ".*"
-                        pathsExist: [env/dev/values.yaml]
+                        pathsExist: [helm/envs/dev/values.yaml]
                         labelMatch: ${github_app_topic}
                     cloneProtocol: https
           # Outer Generator 2: Get open PRs for discovered repos
@@ -45,16 +49,25 @@ spec:
         env: dev
         type: pr
         branch: '{{.branch | replace "/" "-" | trunc 20}}'
+      annotations:
+        # Enable ArgoCD Image Updater for PRs
+        argocd-image-updater.argoproj.io/image-list: app=~
+        argocd-image-updater.argoproj.io/app.update-strategy: latest
+        # Match PR specific tags: {semver}-{branch}-{sha}
+        # This regex ensures we only pick up images built for THIS specific branch.
+        # It prevents PR A from accidentally auto-updating to PR B's image just because B is newer.
+        argocd-image-updater.argoproj.io/app.allow-tags: 'regexp:^[0-9]+\.[0-9]+\.[0-9]+-{{.branch | replace "/" "-" }}-.*$'
+        argocd-image-updater.argoproj.io/write-back-method: git
     spec:
       project: default
       source:
         repoURL: "{{.url}}"
         targetRevision: "{{.branch}}"
-        path: "."
+        path: "helm"
         helm:
           valueFiles:
             - values.yaml
-            - env/dev/values.yaml
+            - envs/dev/values.yaml
       destination:
         server: "{{.server}}"
         namespace: '{{.repository}}-pr-{{.branch | replace "/" "-" | trunc 20}}'
