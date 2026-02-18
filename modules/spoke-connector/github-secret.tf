@@ -28,7 +28,7 @@ resource "kubernetes_secret_v1" "github_repo_creds" {
     name      = "github-repo-creds"
     namespace = local.argocd_namespace
     labels = {
-      "argocd.argoproj.io/secret-type" = "repository"
+      "argocd.argoproj.io/secret-type" = "repo-creds"
     }
   }
 

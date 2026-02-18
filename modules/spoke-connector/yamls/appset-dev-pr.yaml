@@ -67,6 +67,7 @@ spec:
         helm:
           valueFiles:
             - values.yaml
+            - values.yaml
             - envs/dev/values.yaml
       destination:
         server: "{{.server}}"
