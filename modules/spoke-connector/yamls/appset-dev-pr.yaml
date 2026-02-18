@@ -37,7 +37,7 @@ spec:
           - pullRequest:
               github:
                 owner: ${github_org}
-                repo: "{{.url | base}}"
+                repo: "{{.url | base | trimSuffix \".git\"}}"
                 tokenRef:
                   secretName: github-token
                   key: token
