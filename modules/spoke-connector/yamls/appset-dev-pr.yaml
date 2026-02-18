@@ -37,18 +37,18 @@ spec:
           - pullRequest:
               github:
                 owner: ${github_org}
-                repo: "{{.repository}}"
+                repo: "{{.url | base}}"
                 tokenRef:
                   secretName: github-token
                   key: token
               requeueAfterSeconds: 60
   template:
     metadata:
-      name: '{{.repository}}-pr-{{.branch | replace "/" "-" | trunc 20}}'
+      name: '{{.repository}}-pr-{{.branch_slug}}'
       labels:
         env: dev
         type: pr
-        branch: '{{.branch | replace "/" "-" | trunc 20}}'
+        branch: '{{.branch_slug}}'
       annotations:
         # Enable ArgoCD Image Updater for PRs
         argocd-image-updater.argoproj.io/image-list: app=~
@@ -56,21 +56,22 @@ spec:
         # Match PR specific tags: {semver}-{branch}-{sha}
         # This regex ensures we only pick up images built for THIS specific branch.
         # It prevents PR A from accidentally auto-updating to PR B's image just because B is newer.
-        argocd-image-updater.argoproj.io/app.allow-tags: 'regexp:^[0-9]+\.[0-9]+\.[0-9]+-{{.branch | replace "/" "-" }}-.*$'
+        argocd-image-updater.argoproj.io/app.allow-tags: 'regexp:^[0-9]+\.[0-9]+\.[0-9]+-{{.branch_slug}}-.*$'
         argocd-image-updater.argoproj.io/write-back-method: git
     spec:
       project: default
       source:
         repoURL: "{{.url}}"
-        targetRevision: "{{.branch}}"
+        targetRevision: "{{.head_sha}}"
         path: "helm"
         helm:
           valueFiles:
             - values.yaml
+            - values.yaml
             - envs/dev/values.yaml
       destination:
         server: "{{.server}}"
-        namespace: '{{.repository}}-pr-{{.branch | replace "/" "-" | trunc 20}}'
+        namespace: '{{.repository}}-pr-{{.branch_slug}}'
       syncPolicy:
         automated:
           prune: true
