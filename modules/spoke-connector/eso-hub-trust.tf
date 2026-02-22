@@ -12,7 +12,7 @@ locals {
   spoke_eso_role_arns = [
     for k, v in var.spoke_clusters : "arn:${data.aws_partition.current.partition}:iam::${split(":", v.argocd_role_arn)[4]}:role/${local.spoke_eso_role_name}"
   ]
-  
+
   # The role name in the hub cluster
   hub_eso_role_name = "ecr-hub-role"
 }
@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "hub_eso_trust_policy" {
 
   statement {
     actions = ["sts:AssumeRole"]
-    
+
     principals {
       type        = "AWS"
       identifiers = local.spoke_eso_role_arns
