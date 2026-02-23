@@ -39,6 +39,12 @@ spec:
       labels:
         env: "{{.env}}"
         type: stable
+      annotations:
+        argocd-image-updater.argoproj.io/image-list: app=~
+        argocd-image-updater.argoproj.io/app.update-strategy: semver
+        argocd-image-updater.argoproj.io/write-back-method: git
+        argocd-image-updater.argoproj.io/app.helm.image-name: 'k8s-service.containerImage.repository'
+        argocd-image-updater.argoproj.io/app.helm.image-tag: 'k8s-service.containerImage.tag'
     spec:
       project: default
       source:
@@ -61,3 +67,4 @@ spec:
         managedNamespaceMetadata:
           labels:
             istio-injection: enabled
+            allow-hub-ecr-pull: "true"

@@ -37,8 +37,9 @@ spec:
         argocd-image-updater.argoproj.io/image-list: app=~
         argocd-image-updater.argoproj.io/app.update-strategy: latest
         argocd-image-updater.argoproj.io/app.allow-tags: regexp:^[0-9]+\.[0-9]+\.[0-9]+$
-        # Write back to Git (requires write permissions)
         argocd-image-updater.argoproj.io/write-back-method: git
+        argocd-image-updater.argoproj.io/app.helm.image-name: 'k8s-service.containerImage.repository'
+        argocd-image-updater.argoproj.io/app.helm.image-tag: 'k8s-service.containerImage.tag'
     spec:
       project: default
       source:
@@ -61,3 +62,4 @@ spec:
         managedNamespaceMetadata:
           labels:
             istio-injection: enabled
+            allow-hub-ecr-pull: "true"

@@ -58,6 +58,8 @@ spec:
         # It prevents PR A from accidentally auto-updating to PR B's image just because B is newer.
         argocd-image-updater.argoproj.io/app.allow-tags: 'regexp:^[0-9]+\.[0-9]+\.[0-9]+-{{.branch_slug}}-.*$'
         argocd-image-updater.argoproj.io/write-back-method: git
+        argocd-image-updater.argoproj.io/app.helm.image-name: 'k8s-service.containerImage.repository'
+        argocd-image-updater.argoproj.io/app.helm.image-tag: 'k8s-service.containerImage.tag'
     spec:
       project: default
       source:
@@ -80,3 +82,4 @@ spec:
         managedNamespaceMetadata:
           labels:
             istio-injection: enabled
+            allow-hub-ecr-pull: "true"
