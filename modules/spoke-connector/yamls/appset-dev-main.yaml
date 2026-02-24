@@ -52,7 +52,7 @@ spec:
             - envs/dev/values.yaml
           parameters:
             - name: "k8s-service.containerImage.repository"
-              value: "485646919618.dkr.ecr.us-east-1.amazonaws.com/104-1002-1/{{.repository}}"
+              value: "{{.repository}}"
       destination:
         server: "{{.server}}"
         namespace: "{{.repository}}-main-dev"
