@@ -23,7 +23,7 @@ spec:
                   key: token
               filters:
                 - repositoryMatch: ".*"
-                  pathsExist: [env/dev/values.yaml]
+                  pathsExist: [helm/envs/dev/values.yaml]
                   labelMatch: ${github_app_topic}
               cloneProtocol: https
   template:
@@ -50,6 +50,9 @@ spec:
           valueFiles:
             - values.yaml
             - envs/dev/values.yaml
+          parameters:
+            - name: "k8s-service.containerImage.repository"
+              value: "{{.repository}}"
       destination:
         server: "{{.server}}"
         namespace: "{{.repository}}-main-dev"
