@@ -71,9 +71,6 @@ spec:
           valueFiles:
             - values.yaml
             - envs/dev/values.yaml
-          parameters:
-            - name: "k8s-service.containerImage.repository"
-              value: "{{.repository}}"
       destination:
         server: "{{.server}}"
         namespace: '{{.repository}}-pr-{{.branch_slug}}'
