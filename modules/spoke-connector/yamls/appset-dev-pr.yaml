@@ -60,6 +60,7 @@ spec:
         argocd-image-updater.argoproj.io/write-back-method: git
         argocd-image-updater.argoproj.io/app.helm.image-name: 'k8s-service.containerImage.repository'
         argocd-image-updater.argoproj.io/app.helm.image-tag: 'k8s-service.containerImage.tag'
+        argocd-image-updater.argoproj.io/app.ignore-tags: latest
     spec:
       project: default
       source:
