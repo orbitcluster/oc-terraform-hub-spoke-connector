@@ -59,21 +59,22 @@ Reusable Terraform module for connecting ArgoCD hub cluster with spoke EKS clust
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **Self-Contained IRSA** | Creates IAM role + policies + K8s SA, patches ArgoCD controller |
-| **Spoke Registration** | ArgoCD cluster secrets with AWS auth config |
-| **SCM Provider AppSet** | Auto-discovers repos with GitHub topic |
-| **Environment AppSets** | Separate deployments for dev/staging/prod |
-| **PR Previews** | Ephemeral environments on dev cluster |
-| **Prod Approvals** | Production requires manual sync (no auto-sync) |
-| **Custom AppSets** | Support for user-provided ApplicationSet YAML |
+| Feature                 | Description                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| **Self-Contained IRSA** | Creates IAM role + policies + K8s SA, patches ArgoCD controller                     |
+| **Spoke Registration**  | ArgoCD cluster secrets with AWS auth config                                         |
+| **SCM Provider AppSet** | Auto-discovers repos with GitHub topic                                              |
+| **Environment AppSets** | Separate deployments for dev/staging/prod                                           |
+| **PR Previews**         | Ephemeral environments on dev cluster — [how it works →](docs/pr-app-generation.md) |
+| **Prod Approvals**      | Production requires manual sync (no auto-sync)                                      |
+| **Custom AppSets**      | Support for user-provided ApplicationSet YAML                                       |
 
 ## Usage
 
 ### 1. Create a config repository (e.g., `oc-terraform-connector-config`)
 
 **`.github/workflows/ci.yml`:**
+
 ```yaml
 name: "connector-ci"
 on:
@@ -100,6 +101,7 @@ jobs:
 ```
 
 **`connector.tfvars`:**
+
 ```hcl
 region              = "us-east-1"
 hub_bucket_name     = "oc-backend-hub"
@@ -151,21 +153,21 @@ spoke_clusters = {
 
 ### 2. Set GitHub Secrets
 
-| Secret | Description |
-|--------|-------------|
-| `OC_ROLE_TO_ASSUME` | AWS IAM role ARN for GitHub Actions |
-| `OC_PAT_SCM` | GitHub PAT with `repo` scope for SCM Provider |
+| Secret              | Description                                   |
+| ------------------- | --------------------------------------------- |
+| `OC_ROLE_TO_ASSUME` | AWS IAM role ARN for GitHub Actions           |
+| `OC_PAT_SCM`        | GitHub PAT with `repo` scope for SCM Provider |
 
 ## Variables Reference
 
 ### Required (from calling repo)
 
-| Variable | Description |
-|----------|-------------|
-| `hub_bucket_name` | S3 bucket for hub cluster Terraform state |
-| `master_s3_directory` | S3 prefix for hub state files |
-| `github_pat` | GitHub PAT for SCM Provider (via secret) |
-| `spoke_clusters` | Map of spoke cluster configurations |
+| Variable              | Description                               |
+| --------------------- | ----------------------------------------- |
+| `hub_bucket_name`     | S3 bucket for hub cluster Terraform state |
+| `master_s3_directory` | S3 prefix for hub state files             |
+| `github_pat`          | GitHub PAT for SCM Provider (via secret)  |
+| `spoke_clusters`      | Map of spoke cluster configurations       |
 
 ### Spoke Cluster Object
 
@@ -181,34 +183,38 @@ spoke_clusters = {
 
 ### Optional
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `github_org` | `orbitcluster` | GitHub organization |
-| `github_app_topic` | `orbit-deploy` | Topic to filter repos |
-| `enable_scm_appset` | `true` | Enable discovery AppSet |
-| `enable_environment_appsets` | `true` | Enable env-specific AppSets |
-| `enable_pr_preview_appset` | `true` | Enable PR preview AppSet |
-| `custom_appsets` | `{}` | Map of custom AppSet YAML |
+| Variable                     | Default        | Description                 |
+| ---------------------------- | -------------- | --------------------------- |
+| `github_org`                 | `orbitcluster` | GitHub organization         |
+| `github_app_topic`           | `orbit-deploy` | Topic to filter repos       |
+| `enable_scm_appset`          | `true`         | Enable discovery AppSet     |
+| `enable_environment_appsets` | `true`         | Enable env-specific AppSets |
+| `enable_pr_preview_appset`   | `true`         | Enable PR preview AppSet    |
+| `custom_appsets`             | `{}`           | Map of custom AppSet YAML   |
 
 ## Outputs
 
-| Output | Description |
-|--------|-------------|
-| `registered_clusters` | List of registered cluster names |
-| `cluster_secrets` | Map of cluster → secret name |
-| `github_token_secret_name` | GitHub token secret name |
-| `argocd_spoke_role_arn` | IRSA role ARN created for spoke access |
-| `argocd_spoke_service_account` | K8s ServiceAccount name |
+| Output                         | Description                            |
+| ------------------------------ | -------------------------------------- |
+| `registered_clusters`          | List of registered cluster names       |
+| `cluster_secrets`              | Map of cluster → secret name           |
+| `github_token_secret_name`     | GitHub token secret name               |
+| `argocd_spoke_role_arn`        | IRSA role ARN created for spoke access |
+| `argocd_spoke_service_account` | K8s ServiceAccount name                |
 
 ## ApplicationSets Created
 
-| AppSet Name | Generator | Sync Policy | Target |
-|-------------|-----------|-------------|--------|
-| `orbit-apps-discovery` | SCM Provider | Manual | Hub cluster |
-| `orbit-apps-dev` | Matrix (clusters × repos) | Auto | dev clusters |
-| `orbit-apps-staging` | Matrix (clusters × repos) | Auto | staging clusters |
-| `orbit-apps-prod` | Matrix (clusters × repos) | **Manual** | prod clusters |
-| `orbit-apps-pr-preview` | Matrix + SCM | Auto | dev clusters |
+| AppSet Name             | Generator                 | Sync Policy | Target           |
+| ----------------------- | ------------------------- | ----------- | ---------------- |
+| `orbit-apps-discovery`  | SCM Provider              | Manual      | Hub cluster      |
+| `orbit-apps-dev`        | Matrix (clusters × repos) | Auto        | dev clusters     |
+| `orbit-apps-staging`    | Matrix (clusters × repos) | Auto        | staging clusters |
+| `orbit-apps-prod`       | Matrix (clusters × repos) | **Manual**  | prod clusters    |
+| `orbit-apps-pr-preview` | Matrix + SCM              | Auto        | dev clusters     |
+
+### PR Previews Lifecycle
+
+For details on how ephemeral PR environments are generated and how their namespaces are automatically deleted when PRs are closed, see the [PR App Generation Guide](docs/pr-app-generation.md).
 
 ## Application Requirements
 
@@ -237,6 +243,7 @@ hub_account_id   = ""                              # Optional: defaults to curre
 ```
 
 The module creates:
+
 - **IAM Role**: `${cluster_name}-argocd-hub-assumable`
 - **Trust Policy**: Allows `${hub_cluster_name}-argocd-spoke-access` to assume
 - **Permissions**: `eks:DescribeCluster` for K8s authentication
@@ -250,20 +257,22 @@ If not using the custom-addons module, create a role with this trust policy:
 ```json
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Principal": {
-      "AWS": "arn:aws:iam::HUB_ACCOUNT:role/HUB_CLUSTER-argocd-spoke-access"
-    },
-    "Action": "sts:AssumeRole"
-  }]
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::HUB_ACCOUNT:role/HUB_CLUSTER-argocd-spoke-access"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
 }
 ```
-
 
 ## License
 
 MIT
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
