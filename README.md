@@ -274,7 +274,6 @@ If not using the custom-addons module, create a role with this trust policy:
 MIT
 
 <!-- BEGIN_TF_DOCS -->
-
 ## Requirements
 
 No requirements.
@@ -298,5 +297,4 @@ No inputs.
 ## Outputs
 
 No outputs.
-
 <!-- END_TF_DOCS -->
