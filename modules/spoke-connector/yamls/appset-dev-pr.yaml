@@ -37,18 +37,18 @@ spec:
           - pullRequest:
               github:
                 owner: ${github_org}
-                repo: "{{.url | base | trimSuffix \".git\"}}"
+                repo: '{{.url | base | trimSuffix ".git"}}' # Get the repository name from the URL by removing the .git suffix
                 tokenRef:
                   secretName: github-token
                   key: token
               requeueAfterSeconds: 60
   template:
     metadata:
-      name: '{{.repository}}-pr-{{.branch_slug}}'
+      name: "{{.repository}}-pr-{{.branch_slug}}"
       labels:
         env: dev
         type: pr
-        branch: '{{.branch_slug}}'
+        branch: "{{.branch_slug}}"
       annotations:
         # PR images are dynamically constructed using branch slug and short sha
         # bypassing Image Updater entirely for PR ApplicationSets.
@@ -69,7 +69,7 @@ spec:
               value: "{{.branch_slug}}-{{.head_short_sha}}"
       destination:
         server: "{{.server}}"
-        namespace: '{{.repository}}-pr-{{.branch_slug}}'
+        namespace: "{{.repository}}-pr-{{.branch_slug}}"
       syncPolicy:
         automated:
           prune: true
@@ -80,3 +80,6 @@ spec:
           labels:
             istio-injection: enabled
             allow-hub-ecr-pull: "true"
+            app.kubernetes.io/instance: "{{.repository}}-pr-{{.branch_slug}}"
+          annotations:
+            argocd.argoproj.io/tracking-id: "{{.repository}}-pr-{{.branch_slug}}:/Namespace:{{.repository}}-pr-{{.branch_slug}}"
